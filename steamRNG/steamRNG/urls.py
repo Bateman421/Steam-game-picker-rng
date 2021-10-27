@@ -20,4 +20,5 @@ from gamepicker import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
+    path('game/<str:game>', views.gamePicker, name='gamePicker'),
 ]
