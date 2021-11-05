@@ -1,0 +1,6 @@
+
+<form action="{% url 'sharedGames' %}" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input name="submit" type="submit" value="view shared games!">
+</form>

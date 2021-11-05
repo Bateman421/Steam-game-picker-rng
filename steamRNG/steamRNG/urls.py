@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('game/<str:game>', views.gamePicker, name='gamePicker'),
+    path('sharedGames/', views.sharedGames, name='sharedGames'),
 ]

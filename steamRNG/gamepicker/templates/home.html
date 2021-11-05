@@ -1,4 +1,5 @@
 <h2>Hello World!</h2>
+<a href="{% url 'sharedGames' %}">Check what Games you share with ya pals</a>
 
 <form action="{% url 'home' %}" method="post">
     {% csrf_token %}

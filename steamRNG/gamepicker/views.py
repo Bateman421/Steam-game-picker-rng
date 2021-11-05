@@ -1,12 +1,10 @@
-import time
 import random
-from django.http.response import JsonResponse
 from selenium.webdriver.opera.options import Options
-from selenium import webdriver
-from bs4 import BeautifulSoup
 from django.shortcuts import render, redirect
-from .forms import SteamIdForm
+from .forms import SharedSteamGames, SteamIdForm
 from .models import GameRng
+from .scrapper import Scrapper
+
 # Create your views here.
 
 options = Options()
@@ -17,31 +15,21 @@ def home(request):
     if request.method == 'POST':
         filled_form = SteamIdForm(request.POST)
         if filled_form.is_valid():
-            text = filled_form.cleaned_data['text']
+            steam_id = filled_form.cleaned_data['id_game']
 
-            # Selenium driver, en teoria solo deveria correr "server side" Cliente final
-            # no deberia toparse con esta funcionalidad corriendo en su terminal
-            driver = webdriver.Opera(
-                options=options, executable_path=r'C:\Program Files\Opera\80.0.4170.63\operadriver.exe')
-            driver.get('https://steamcommunity.com/id/'+text+'/games/?tab=all')
-            driver.execute_script(
-                "window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(1)
-            soup = BeautifulSoup(driver.page_source, 'lxml')
-            games_ids = soup.find_all('div', class_='gameListRow')
-            driver.close()
+            games_list = Scrapper.gameList(steam_id)
 
             # Sopa que extrae individualmente y inserta en variables los datos requeridos
             # de cada juego
-            num = random.randint(0, len(games_ids))
-            name = games_ids[num].select('div.gameListRowItemName.ellipsis')
+            num = random.randint(0, len(games_list))
+            name = games_list[num].select('div.gameListRowItemName.ellipsis')
             for h in range(0, len(name)):
                 r_name = name[h].text
-            img = games_ids[num].findAll('img', class_='game_capsule')
+            img = games_list[num].findAll('img', class_='game_capsule')
             for j in img:
                 # if j['src'].endswith('.jpg'):
                 r_img = j['src']
-            r_id = games_ids[num].get('id')
+            r_id = games_list[num].get('id')
 
             # Checke e insercion en el modelo en caso de no existir para cumplir
             # con la funcion del diseño Modelo-Vista
@@ -63,3 +51,36 @@ def home(request):
 def gamePicker(request, game):
     id_game = GameRng.objects.get(id_game=game)
     return render(request, 'gamePicker.html', {'game': id_game})
+
+
+def sharedGames(request):
+    if request.method == 'POST':
+        filled_form = SharedSteamGames(request.POST)
+        if filled_form.is_valid():
+            id_1 = filled_form.cleaned_data['id_1']
+            id_2 = filled_form.cleaned_data['id_2']
+            games_list1 = Scrapper.gameList(id_1)
+            games_list2 = Scrapper.gameList(id_2)
+            shared_games_names = []
+            shared_games_imgs = []
+            shared_games_ids = []
+            print(type(games_list1))
+            for i in range(0, len(games_list1)):
+                # print(games_list1[i])
+                # print(games_list2[i])
+                for j in range(0, len(games_list2)):
+                    if (games_list2[j] == games_list1[i]):
+                        var = games_list1[i].select(
+                            'div.gameListRowItemName.ellipsis')
+                        for k in range(0, len(var)):
+                            shared_games_names.append(var[k].text)
+                        var = games_list1[i].findAll(
+                            'img', class_='game_capsule')
+                        for l in var:
+                            shared_games_imgs.append(l['src'])
+                        shared_games_ids.append(games_list1[i].get('id'))
+                        break
+            print(shared_games_names)
+
+    form = SharedSteamGames()
+    return render(request, 'sharedGames.html', {'form': form})
