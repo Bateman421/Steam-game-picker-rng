@@ -7,18 +7,13 @@ from .scrapper import Scrapper
 
 # Create your views here.
 
-options = Options()
-options.binary_location = r'C:\Program Files\Opera\80.0.4170.63\Opera.exe'
-
 
 def home(request):
     if request.method == 'POST':
         filled_form = SteamIdForm(request.POST)
         if filled_form.is_valid():
             steam_id = filled_form.cleaned_data['id_game']
-
             games_list = Scrapper.gameList(steam_id)
-
             # Sopa que extrae individualmente y inserta en variables los datos requeridos
             # de cada juego
             num = random.randint(0, len(games_list))
@@ -31,7 +26,7 @@ def home(request):
                 r_img = j['src']
             r_id = games_list[num].get('id')
 
-            # Checke e insercion en el modelo en caso de no existir para cumplir
+            # Checkeo e insercion en el modelo en caso de no existir para cumplir
             # con la funcion del diseño Modelo-Vista
             try:
                 GameRng.objects.get(id_game=r_id)
@@ -41,9 +36,7 @@ def home(request):
                 game.name = r_name
                 game.img = r_img
                 game.save()
-
             return redirect('gamePicker', game=r_id)
-
     form = SteamIdForm()
     return render(request, 'home.html', {'form': form})
 
@@ -64,23 +57,27 @@ def sharedGames(request):
             shared_games_names = []
             shared_games_imgs = []
             shared_games_ids = []
-            print(type(games_list1))
+
             for i in range(0, len(games_list1)):
-                # print(games_list1[i])
-                # print(games_list2[i])
+                var = games_list1[i].select(
+                    'div.gameListRowItemName.ellipsis')
+                for k in range(0, len(var)):
+                    name1 = (var[k].text)
                 for j in range(0, len(games_list2)):
-                    if (games_list2[j] == games_list1[i]):
-                        var = games_list1[i].select(
-                            'div.gameListRowItemName.ellipsis')
-                        for k in range(0, len(var)):
-                            shared_games_names.append(var[k].text)
-                        var = games_list1[i].findAll(
+                    var2 = games_list2[j].select(
+                        'div.gameListRowItemName.ellipsis')
+                    for l in range(0, len(var2)):
+                        name2 = (var2[l].text)
+                    if (name1 == name2):
+                        shared_games_names.append(name1)
+                        var2 = games_list1[i].findAll(
                             'img', class_='game_capsule')
-                        for l in var:
+                        for l in var2:
                             shared_games_imgs.append(l['src'])
                         shared_games_ids.append(games_list1[i].get('id'))
                         break
-            print(shared_games_names)
+            for i in shared_games_names:
+                print(i)
 
     form = SharedSteamGames()
     return render(request, 'sharedGames.html', {'form': form})

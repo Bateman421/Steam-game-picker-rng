@@ -11,6 +11,7 @@ class SteamIdForm(forms.ModelForm):
 
 
 class SharedSteamGames(forms.Form):
+    model = GameRng
     id_1 = forms.CharField(label='Insert your Steam Id', max_length=100)
     id_2 = forms.CharField(
         label='Insert your friend\'s steam id', max_length=100)

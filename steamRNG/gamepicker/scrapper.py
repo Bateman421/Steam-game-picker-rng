@@ -6,7 +6,6 @@ import time
 
 class Scrapper():
     def gameList(steam_id):
-
         # Selenium driver, en teoria solo deveria correr "server side" Cliente final
         # no deberia toparse con esta funcionalidad corriendo en su terminal
         options = webdriver.ChromeOptions()
